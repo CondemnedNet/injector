@@ -9,7 +9,7 @@ import Foundation
 
 public protocol Resolver { }
 
-public extension Resolver where Self: Locator, Self: Registry {
+internal extension Resolver where Self: Locator, Self: Registry {
     func resolve<`Type`, Argument>(_ type: `Type`.Type = `Type`.self,
                                    tags: Set<AnyHashable>,
                                    arguments: Argument) throws -> `Type` {
@@ -17,27 +17,16 @@ public extension Resolver where Self: Locator, Self: Registry {
         let dependency = try locate(registration)
         return try resolve(dependency: dependency, arguments: arguments, for: registration)
     }
-    
-    func resolve<`Type`, Argument>(_ type: `Type`.Type = `Type`.self,
-                                   tags: AnyHashable...,
-                                   arguments: Argument) throws -> `Type` {
-        return try resolve(type, tags: Set(tags), arguments: arguments)
-    }
-    
+}
+
+public extension Resolver where Self: Locator, Self: Registry {
     // MARK: - Parameter Packs
-    
-    func resolve<`Type`, each Argument>(_ type: `Type`.Type = `Type`.self,
-                                        tags: Set<AnyHashable>,
-                                        arguments: repeat each Argument) throws -> `Type` {
-        return try resolve(type, tags: tags, arguments: (repeat each arguments))
-    }
     
     func resolve<`Type`, each Argument>(_ type: `Type`.Type = `Type`.self,
                                         tags: AnyHashable...,
                                         arguments: repeat each Argument) throws -> `Type` {
-        return try resolve(type, tags: Set(tags), arguments: repeat each arguments)
+        return try resolve(type, tags: Set(tags), arguments: (repeat each arguments))
     }
-    
     
     func resolve<`Type`, Argument>(dependency: any Injectable,
                                    arguments: Argument,

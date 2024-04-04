@@ -9,16 +9,16 @@ import Foundation
 
 public protocol Injectable {
     var scope: Scope { get }
-    func resolve(_ container: any Registry, arguments: Any) throws -> Any
+    func resolve(_ container: any Resolver, arguments: Any) throws -> Any
 }
 
-class Dependency: Injectable {
-    let scope: Scope
+public class Dependency: Injectable {
+    public let scope: Scope
     
     private var resolvedInstance: Any? = nil
     private let queue: DispatchQueue
     
-    let constructor: (any Registry, Any) throws -> Any
+    let constructor: (any Resolver, Any) throws -> Any
     
     init<`Type`, each Argument>(registration: Registration,
                                 scope: Scope = .unique,
@@ -32,20 +32,20 @@ class Dependency: Injectable {
         }
     }
     
-    func resolve(_ container: any Registry, arguments: Any) throws -> Any {
+    public func resolve(_ container: any Resolver, arguments: Any) throws -> Any {
         // If we've previously resolved this, return it.
-        guard resolvedInstance != nil else {
+        guard resolvedInstance == nil else {
             return resolvedInstance!
         }
         
         switch scope {
         case .unique:
             // resolve it
-            return try resolveInstance(from: container, argumeents: arguments, constructor: constructor)
+            return try resolveInstance(from: container, arguments: arguments, constructor: constructor)
         case .singleton:
             return try queue.sync {
                 // resolve it, and set resolvedInstance to it.
-                let instance = try resolveInstance(from: container, argumeents: arguments, constructor: constructor)
+                let instance = try resolveInstance(from: container, arguments: arguments, constructor: constructor)
                 resolvedInstance = instance
                 return instance
             }
@@ -54,12 +54,7 @@ class Dependency: Injectable {
     }
     
     
-    private func resolveInstance(from container: any Registry, argumeents: Any, constructor: (any Registry, Any) throws -> Any) throws -> Any {
-        do {
-            return try constructor(container, argumeents)
-        } catch {
-            //          throw ResolutionError.Reason.error(error)
-            throw error
-        }
+    private func resolveInstance(from container: any Resolver, arguments: Any, constructor: (any Resolver, Any) throws -> Any) throws -> Any {
+        return try constructor(container, arguments)
     }
 }

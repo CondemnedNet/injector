@@ -5,41 +5,43 @@ public enum Scope {
     case singleton
 }
 
-public typealias Constructor<`Type`, each Argument> = (any Registry, repeat each Argument) throws -> `Type`
+public typealias Constructor<`Type`, each Argument> = (any Resolver, repeat each Argument) throws -> `Type`
 
-public class Container: Registry {
+public class Container {
     
-    
-    private var dependendencies: [Registration: any Injectable] = [:]
+    internal private(set) var dependendencies: [Registration: any Injectable] = [:]
     private let queue: DispatchQueue = DispatchQueue(label: "container", attributes: .concurrent)
     
+}
+
+extension Container: Registry {
     // MARK: Register Dependencies
     @discardableResult
-    public func register<`Type`, each Argument>(_ type: `Type`.Type,
+    public func register<`Type`, each Argument>(_ type: `Type`.Type = `Type`.self,
                                                 scope: Scope = .unique,
-                                                tags: Set<AnyHashable> = [],
+                                                tags: Set<AnyHashable>,
                                                 constructor: @escaping Constructor<`Type`, repeat each Argument>)  -> Registration {
         
-        let registration = Registration(type: `Type`.self, arguments: (repeat each Argument).self, tags: tags)
-        let dependency = Dependency(registration: registration, constructor: constructor)
+        let registration = Registration(type: type, arguments: (repeat each Argument).self, tags: tags)
+        let dependency = Dependency(registration: registration, scope: scope, constructor: constructor)
         commit(registration: registration, dependency: dependency)
         return registration
     }
     
-    
-    @discardableResult
-    public func register<`Type`, each Argument>(_ type: `Type`.Type,
-                                                scope: Scope = .unique,
-                                                tags: AnyHashable...,
-                                                constructor: @escaping Constructor<`Type`, repeat each Argument>)  -> Registration {
-        return register(type, scope: scope, tags: Set(tags), constructor: constructor)
-        
-    }
-    
-    func commit(registration: Registration, dependency: any Injectable) {
+    private func commit(registration: Registration, dependency: any Injectable) {
         queue.sync(flags: .barrier) {
             dependendencies[registration] = dependency
         }
         
+    }
+}
+
+extension Container: Resolver { }
+
+extension Container: Locator {
+    public func locate(_ criteria: Criteria) -> [Registration : any Injectable] {
+        queue.sync {
+            return dependendencies.filter { criteria ~= $0 }
+        }
     }
 }

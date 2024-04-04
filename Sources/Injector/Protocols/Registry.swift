@@ -1,6 +1,6 @@
 //
 //  Registry.swift
-//  
+//
 //
 //  Created by Karl Catigbe on 4/3/24.
 //
@@ -13,10 +13,33 @@ public protocol Registry {
                                          scope: Scope ,
                                          tags: Set<AnyHashable>,
                                          constructor: @escaping Constructor<`Type`, repeat each Argument>)  -> Registration
+}
+
+public extension Registry {
     
     @discardableResult
-    func register<`Type`, each Argument>(_ type: `Type`.Type,
-                                         scope: Scope,
+    func register<`Type`, each Argument>(_ type: `Type`.Type = `Type`.self,
+                                         scope: Scope = .unique,
                                          tags: AnyHashable...,
-                                         constructor: @escaping Constructor<`Type`, repeat each Argument>)  -> Registration
+                                         constructor: @escaping (any Resolver, repeat each Argument) throws -> `Type`)  -> Registration {
+        
+        let constructor: Constructor<`Type`, repeat each Argument> = { (container: any Resolver, args: repeat each Argument) in
+            try constructor(container, repeat each args)
+        }
+        
+        return register(type, scope: scope, tags: Set(tags), constructor: constructor)
+        
+    }
+    
+    @discardableResult
+    func register<`Type`>(_ type: `Type`.Type = `Type`.self,
+                          scope: Scope = .unique,
+                          tags: AnyHashable...,
+                          instance: @escaping @autoclosure () -> `Type`) -> Registration {
+        
+        let constructor: Constructor<`Type`, Void> = { _,_ in
+            instance()
+        }
+        return register(type, scope: scope, tags: Set(tags), constructor: constructor)
+    }
 }
