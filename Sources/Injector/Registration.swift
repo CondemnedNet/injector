@@ -22,13 +22,7 @@ public struct Registration: Equatable, Hashable, CustomStringConvertible {
         self.arguments = String(reflecting: arguments)
         self.tags = tags
     }
-    
-    init<`Type`, Arguments>(type: `Type`.Type,
-                          arguments: Arguments.Type = Void.self,
-                            tags: AnyHashable...) {
-        self.init(type: type, arguments: arguments, tags: Set(tags))
-    }
-            
+
     public var description: String {
         return "Registration - Type: \(type) - Arguments: \(arguments) - Tags: \(tags)"
     }
