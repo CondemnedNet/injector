@@ -7,14 +7,14 @@
 
 import Foundation
 
-public struct Criteria: Equatable {
-    public let type: String?
-    public let tags: Tags?
-    public let arguments: String?
+struct Criteria: Equatable {
+    let type: String?
+    let tags: Tags?
+    let arguments: String?
     
-    public let scope: Scope?
+    let scope: Scope?
     
-    public init<`Type`, Argument>(_ type: `Type`.Type,
+    init<`Type`, Argument>(_ type: `Type`.Type,
                                   tags: Tags? = nil,
                                   arguments: Argument.Type,
                                   scope: Scope? = nil) {
@@ -24,7 +24,7 @@ public struct Criteria: Equatable {
         self.scope = scope
     }
     
-    public init<`Type`>(_ type: `Type`.Type,
+    init<`Type`>(_ type: `Type`.Type,
                         tags: Tags? = nil,
                         scope: Scope? = nil) {
         self.type = String(reflecting: type)
@@ -33,7 +33,7 @@ public struct Criteria: Equatable {
         self.scope = scope
     }
     
-    public init<Argument>(tags: Tags? = nil,
+    init<Argument>(tags: Tags? = nil,
                           args: Argument.Type,
                           scope: Scope? = nil) {
         self.type = nil
@@ -42,7 +42,7 @@ public struct Criteria: Equatable {
         self.scope = scope
     }
     
-    public init(tags: Tags? = nil,
+    init(tags: Tags? = nil,
                 scope: Scope? = nil) {
         self.type = nil
         self.tags = tags
@@ -50,7 +50,7 @@ public struct Criteria: Equatable {
         self.scope = scope
     }
     
-    public init(registration: Registration,
+    init(registration: Registration,
                 scope: Scope? = nil) {
         self.type = registration.type
         self.tags = .equals(registration.tags)
@@ -75,17 +75,17 @@ func ~= (criteria: Criteria, rhs: Dictionary<Registration, any Injectable>.Eleme
     criteria ~= rhs.key && criteria ~= rhs.value
 }
 
-public extension Criteria {
+extension Criteria {
     struct Tags: Equatable {
-        public enum Comparator {
+        enum Comparator {
             case equals
             case contains
         }
         
-        public let tags: Set<AnyHashable>
-        public let comparator: Comparator
+        let tags: Set<AnyHashable>
+        let comparator: Comparator
         
-        public init(tags: Set<AnyHashable>, comparator: Comparator = .equals) {
+        init(tags: Set<AnyHashable>, comparator: Comparator = .equals) {
             self.tags = tags
             self.comparator = comparator
         }

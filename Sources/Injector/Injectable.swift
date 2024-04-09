@@ -7,7 +7,7 @@
 
 import Foundation
 
-public protocol Injectable {
+public protocol Injectable: AnyObject {
     var scope: Scope { get }
     func resolve(_ container: any Resolver, arguments: Any) throws -> Any
 }
@@ -15,10 +15,10 @@ public protocol Injectable {
 public class Dependency: Injectable {
     public let scope: Scope
     
+    private let constructor: (any Resolver, Any) throws -> Any
+    
     private var resolvedInstance: Any? = nil
     private let queue: DispatchQueue
-    
-    let constructor: (any Resolver, Any) throws -> Any
     
     init<`Type`, each Argument>(registration: Registration,
                                 scope: Scope = .unique,
@@ -32,7 +32,8 @@ public class Dependency: Injectable {
         }
     }
     
-    public func resolve(_ container: any Resolver, arguments: Any) throws -> Any {
+    public func resolve(_ container: any Resolver,
+                        arguments: Any) throws -> Any {
         // If we've previously resolved this, return it.
         guard resolvedInstance == nil else {
             return resolvedInstance!
@@ -53,8 +54,9 @@ public class Dependency: Injectable {
         
     }
     
-    
-    private func resolveInstance(from container: any Resolver, arguments: Any, constructor: (any Resolver, Any) throws -> Any) throws -> Any {
+    private func resolveInstance(from container: any Resolver,
+                                 arguments: Any,
+                                 constructor: (any Resolver, Any) throws -> Any) throws -> Any {
         return try constructor(container, arguments)
     }
 }

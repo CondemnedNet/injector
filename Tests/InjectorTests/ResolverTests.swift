@@ -46,7 +46,7 @@ final class ResolverTests: XCTestCase {
         XCTAssertTrue(firstResolved === secondResolved)
     }
     
-    func testThrowingConstructorThrowsInjectionError() throws {
+    func testThrowingRandomErrorThrowsInjectionError() throws {
         container.register { _ in
             try ThrowingMockService(error: MockError.testError) as MockService
         }
@@ -55,6 +55,23 @@ final class ResolverTests: XCTestCase {
         XCTAssertThrowsError(try container.resolve() as MockService) {
             if case let .other(error) = $0 as? InjectorError, let mockError = error as? MockError {
                 XCTAssertEqual(mockError, MockError.testError)
+            } else {
+                XCTFail("Got the wrong error! \($0)")
+            }
+        }
+        
+    }
+    
+    func testThrowingInjectionErrorThrowsInjectionError() throws {
+        let registration = Registration(type: Int.self)
+        container.register { _ in
+            try ThrowingMockService(error: InjectorError.notFound(registration)) as MockService
+        }
+        
+            
+        XCTAssertThrowsError(try container.resolve() as MockService) {
+            if case let .notFound(reg) = $0 as? InjectorError {
+                XCTAssertEqual(registration, reg)
             } else {
                 XCTFail("Got the wrong error! \($0)")
             }

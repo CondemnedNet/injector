@@ -5,11 +5,9 @@ public enum Scope {
     case singleton
 }
 
-public typealias Constructor<`Type`, each Argument> = (any Resolver, repeat each Argument) throws -> `Type`
-
 public class Container {
     
-    internal private(set) var dependendencies: [Registration: any Injectable] = [:]
+    internal private(set) var dependencies: [Registration: any Injectable] = [:]
     private let queue: DispatchQueue = DispatchQueue(label: "container", attributes: .concurrent)
     
 }
@@ -30,18 +28,16 @@ extension Container: Registry {
     
     private func commit(registration: Registration, dependency: any Injectable) {
         queue.sync(flags: .barrier) {
-            dependendencies[registration] = dependency
+            dependencies[registration] = dependency
         }
         
     }
 }
 
-extension Container: Resolver { }
-
-extension Container: Locator {
-    public func locate(_ criteria: Criteria) -> [Registration : any Injectable] {
+extension Container: Resolver {
+    public func locate(_ registration: Registration) -> [Registration : any Injectable] {
         queue.sync {
-            return dependendencies.filter { criteria ~= $0 }
+            return filter(dependencies: dependencies, against: registration)
         }
     }
 }

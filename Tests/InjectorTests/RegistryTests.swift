@@ -23,10 +23,10 @@ final class RegistryTests: XCTestCase {
     func testRegistrationOfOneDependency() throws {
         container.register { _ in MockServiceImp1() as MockService}
 
-        XCTAssertFalse(container.dependendencies.isEmpty)
-        XCTAssertEqual(container.dependendencies.count, 1)
+        XCTAssertFalse(container.dependencies.isEmpty)
+        XCTAssertEqual(container.dependencies.count, 1)
         let registration = Registration(type: MockService.self)
-        XCTAssertNotNil(container.dependendencies[registration])
+        XCTAssertNotNil(container.dependencies[registration])
         
     }
     
@@ -34,9 +34,9 @@ final class RegistryTests: XCTestCase {
         container.register { _ in MockServiceImp1() as MockService}
         container.register(MockService.self, instance: MockServiceImp1())
                         
-        XCTAssertFalse(container.dependendencies.isEmpty)
-        XCTAssertEqual(container.dependendencies.count, 1)
+        XCTAssertFalse(container.dependencies.isEmpty)
+        XCTAssertEqual(container.dependencies.count, 1)
         let registration = Registration(type: MockService.self)
-        XCTAssertNotNil(container.dependendencies[registration])
+        XCTAssertNotNil(container.dependencies[registration])
     }
 }

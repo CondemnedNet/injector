@@ -27,7 +27,7 @@ public class MockServiceImp1: MockService {
 }
 
 public class ThrowingMockService: MockService {
-    init(error: MockError) throws {
+    init(error: any Error) throws {
         throw error
     }
 }

@@ -7,25 +7,17 @@
 
 import Foundation
 
-public protocol Resolver { }
+public protocol Resolver {
+    func locate(_ registration: Registration) -> [Registration : any Injectable]
+}
 
-internal extension Resolver where Self: Locator, Self: Registry {
+internal extension Resolver {
     func resolve<`Type`, Argument>(_ type: `Type`.Type = `Type`.self,
                                    tags: Set<AnyHashable>,
                                    arguments: Argument) throws -> `Type` {
         let registration = Registration(type: `Type`.self, arguments: Argument.self, tags: tags)
-        let dependency = try locate(registration)
+        let dependency = try retrieveRegistration(registration)
         return try resolve(dependency: dependency, arguments: arguments, for: registration)
-    }
-}
-
-public extension Resolver where Self: Locator, Self: Registry {
-    // MARK: - Parameter Packs
-    
-    func resolve<`Type`, each Argument>(_ type: `Type`.Type = `Type`.self,
-                                        tags: AnyHashable...,
-                                        arguments: repeat each Argument) throws -> `Type` {
-        return try resolve(type, tags: Set(tags), arguments: (repeat each arguments))
     }
     
     func resolve<`Type`, Argument>(dependency: any Injectable,
@@ -39,5 +31,28 @@ public extension Resolver where Self: Locator, Self: Registry {
             }
             throw error
         }
+    }
+    
+    func retrieveRegistration(_ registration: Registration) throws -> any Injectable {
+        let dependencies = locate(registration)
+        guard let injectable = dependencies[registration] else {
+            throw InjectorError.notFound(registration)
+        }
+        
+        return injectable
+    }
+    
+    func filter(dependencies: [Registration: any Injectable], 
+                against registration: Registration) -> [Registration: any Injectable] {
+        let criteria = Criteria(registration: registration)
+        return dependencies.filter { criteria ~= $0 }
+    }
+}
+
+public extension Resolver {
+    func resolve<`Type`, each Argument>(_ type: `Type`.Type = `Type`.self,
+                                        tags: AnyHashable...,
+                                        arguments: repeat each Argument) throws -> `Type` {
+        return try resolve(type, tags: Set(tags), arguments: (repeat each arguments))
     }
 }
