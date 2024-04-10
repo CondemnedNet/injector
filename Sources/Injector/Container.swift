@@ -7,9 +7,13 @@ public enum Scope {
 
 public class Container {
     
+    internal private(set) var parent: Container?
     internal private(set) var dependencies: [Registration: any Injectable] = [:]
     private let queue: DispatchQueue = DispatchQueue(label: "container", attributes: .concurrent)
     
+    init(parent: Container? = nil) {
+        self.parent = parent
+    }
 }
 
 extension Container: Registry {
@@ -30,13 +34,17 @@ extension Container: Registry {
         queue.sync(flags: .barrier) {
             dependencies[registration] = dependency
         }
-        
     }
 }
 
 extension Container: Resolver {
     public func locate(_ registration: Registration) -> [Registration : any Injectable] {
         queue.sync {
+            if let parent {
+                let parentRegs = parent.locate(registration)
+                let entries = filter(dependencies: dependencies, against: registration)
+                return parentRegs.merging(entries, uniquingKeysWith: { $1 })
+            }
             return filter(dependencies: dependencies, against: registration)
         }
     }
