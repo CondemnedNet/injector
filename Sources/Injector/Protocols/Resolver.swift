@@ -7,7 +7,7 @@
 
 import Foundation
 
-public protocol Resolver {
+public protocol Resolver: AnyObject {
     func locate(_ registration: Registration) -> [Registration: any Injectable]
 }
 

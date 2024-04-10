@@ -8,10 +8,32 @@ public enum Scope {
 public class Container {
     internal private(set) var parent: Container?
     internal private(set) var dependencies: [Registration: any Injectable] = [:]
+    
+    private var weakCollaborators: [WeakWrapper<Container>] = []
     private let queue = DispatchQueue(label: "container", attributes: .concurrent)
+    
+    public var collaborators: [any Resolver] {
+        return weakCollaborators.compactMap({ $0.value })
+    }
     
     init(parent: Container? = nil) {
         self.parent = parent
+    }
+}
+
+extension Container: Collaborator {
+    public func collaborate(with collaborators: [any Resolver]) {
+        queue.sync(flags: .barrier) {
+            let compacted = collaborators
+                .filter({ $0 !== self })
+                .compactMap({ resolver -> WeakWrapper<Container>? in
+                guard let weakContainer = resolver as? Container else {
+                    return nil
+                }
+                return WeakWrapper(value: weakContainer)
+            })
+            self.weakCollaborators.append(contentsOf: compacted)
+        }
     }
 }
 
@@ -38,12 +60,25 @@ extension Container: Registry {
 extension Container: Resolver {
     public func locate(_ registration: Registration) -> [Registration: any Injectable] {
         queue.sync {
+            var entries = filter(dependencies: dependencies, against: registration)
             if let parent {
                 let parentRegs = parent.locate(registration)
-                let entries = filter(dependencies: dependencies, against: registration)
-                return parentRegs.merging(entries, uniquingKeysWith: { $1 })
+                entries = parentRegs.merging(entries, uniquingKeysWith: { _, new in new })
             }
-            return filter(dependencies: dependencies, against: registration)
+            
+            guard entries.isEmpty else {
+                return entries
+            }
+            
+            var collaboratedEntries: [Registration: any Injectable] = [:]
+            
+            weakCollaborators.forEach { weakContainer in
+                if let container = weakContainer.value {
+                    let located = container.locate(registration)
+                    collaboratedEntries = located.merging(collaboratedEntries, uniquingKeysWith: { current, _ in current })
+                }
+            }
+            return collaboratedEntries
         }
     }
 }

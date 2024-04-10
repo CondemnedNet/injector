@@ -30,20 +30,20 @@ final class ParentResolverTests: XCTestCase {
         
         let resolvedParent = try container.resolve() as MockService
         let resolvedChild = try container.resolve(MockServiceImp1.self)
-        XCTAssertTrue(resolvedParent === parentImpl)
-        XCTAssertTrue(resolvedChild === childImpl)
+        XCTAssertIdentical(resolvedParent, parentImpl)
+        XCTAssertIdentical(resolvedChild, childImpl)
     }
 
     func testChildImplOverridesParentImpl() throws {
-        let childImpl = MockServiceImp1(string: "Child")
-        let parentImpl = MockServiceImp1(string: "Parent")
+        let childImpl = MockServiceImp1("Child")
+        let parentImpl = MockServiceImp1("Parent")
         
-        parentContainer.register { _ in parentImpl }
+        parentContainer.register(instance: parentImpl)
         container.register(instance: childImpl)
         
         let resolvedParent = try container.resolve() as MockServiceImp1
         let resolvedChild = try container.resolve(MockServiceImp1.self)
-        XCTAssertTrue(resolvedParent === resolvedChild)
-        XCTAssertTrue(resolvedChild === childImpl)
+        XCTAssertIdentical(resolvedParent, resolvedChild)
+        XCTAssertIdentical(resolvedChild, childImpl)
     }
 }

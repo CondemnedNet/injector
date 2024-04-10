@@ -9,13 +9,13 @@ import Foundation
 
 struct Criteria: Equatable {
     let type: String?
-    let tags: Tags?
+    let tags: TagSet?
     let arguments: String?
     
     let scope: Scope?
     
     init<`Type`, Argument>(_ type: `Type`.Type,
-                           tags: Tags? = nil,
+                           tags: TagSet? = nil,
                            arguments: Argument.Type,
                            scope: Scope? = nil) {
         self.type = String(reflecting: type)
@@ -25,7 +25,7 @@ struct Criteria: Equatable {
     }
     
     init<`Type`>(_ type: `Type`.Type,
-                 tags: Tags? = nil,
+                 tags: TagSet? = nil,
                  scope: Scope? = nil) {
         self.type = String(reflecting: type)
         self.tags = tags
@@ -33,16 +33,16 @@ struct Criteria: Equatable {
         self.scope = scope
     }
     
-    init<Argument>(tags: Tags? = nil,
-                   args: Argument.Type,
+    init<Argument>(tags: TagSet? = nil,
+                   arguments: Argument.Type,
                    scope: Scope? = nil) {
         self.type = nil
         self.tags = tags
-        self.arguments = String(reflecting: args)
+        self.arguments = String(reflecting: arguments)
         self.scope = scope
     }
     
-    init(tags: Tags? = nil,
+    init(tags: TagSet? = nil,
          scope: Scope? = nil) {
         self.type = nil
         self.tags = tags
@@ -59,23 +59,7 @@ struct Criteria: Equatable {
     }
 }
 
-// swiftlint:disable static_operator
-func ~= (criteria: Criteria, registration: Registration) -> Bool {
-    let type = criteria.type ?? registration.type
-    let tags = criteria.tags ?? .equals(registration.tags)
-    let arguments = criteria.arguments ?? registration.arguments
-    return type == registration.type && tags ~= registration.tags && arguments == registration.arguments
-}
-
-func ~= (criteria: Criteria, resolvable: any Injectable) -> Bool {
-    let scope = criteria.scope ?? resolvable.scope
-    return scope == resolvable.scope
-}
-
-func ~= (criteria: Criteria, rhs: Dictionary<Registration, any Injectable>.Element) -> Bool {
-    criteria ~= rhs.key && criteria ~= rhs.value
-}
-// swiftlint:enable static_operator
+infix operator ~=: ComparisonPrecedence
 
 extension Criteria {
     enum Comparator {
@@ -83,11 +67,11 @@ extension Criteria {
         case contains
     }
     
-    struct Tags: Equatable {
+    struct TagSet: Equatable {
         let tags: Set<AnyHashable>
         let comparator: Comparator
         
-        init(tags: Set<AnyHashable>, comparator: Comparator = .equals) {
+        private init(tags: Set<AnyHashable>, comparator: Comparator = .equals) {
             self.tags = tags
             self.comparator = comparator
         }
@@ -117,5 +101,21 @@ extension Criteria {
                 return criterion.tags.isSubset(of: tags)
             }
         }
+    }
+    
+    static func ~= (criteria: Criteria, registration: Registration) -> Bool {
+        let type = criteria.type ?? registration.type
+        let tags = criteria.tags ?? .equals(registration.tags)
+        let arguments = criteria.arguments ?? registration.arguments
+        return type == registration.type && tags ~= registration.tags && arguments == registration.arguments
+    }
+    
+    static func ~= (criteria: Criteria, resolvable: any Injectable) -> Bool {
+        let scope = criteria.scope ?? resolvable.scope
+        return scope == resolvable.scope
+    }
+    
+    static func ~= (criteria: Criteria, rhs: Dictionary<Registration, any Injectable>.Element) -> Bool {
+        criteria ~= rhs.key && criteria ~= rhs.value
     }
 }
