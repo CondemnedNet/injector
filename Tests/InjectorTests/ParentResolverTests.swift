@@ -1,15 +1,14 @@
 //
 //  ParentRegistryTests.swift
-//  
+//
 //
 //  Created by Karl Catigbe on 4/10/24.
 //
 
-import XCTest
 @testable import Injector
+import XCTest
 
 final class ParentResolverTests: XCTestCase {
-
     var container: Container!
     var parentContainer: Container!
     
@@ -33,7 +32,6 @@ final class ParentResolverTests: XCTestCase {
         let resolvedChild = try container.resolve(MockServiceImp1.self)
         XCTAssertTrue(resolvedParent === parentImpl)
         XCTAssertTrue(resolvedChild === childImpl)
-        
     }
 
     func testChildImplOverridesParentImpl() throws {

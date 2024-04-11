@@ -8,7 +8,7 @@
 import Foundation
 
 public protocol Resolver {
-    func locate(_ registration: Registration) -> [Registration : any Injectable]
+    func locate(_ registration: Registration) -> [Registration: any Injectable]
 }
 
 internal extension Resolver {
@@ -22,8 +22,9 @@ internal extension Resolver {
     
     func resolve<`Type`, Argument>(dependency: any Injectable,
                                    arguments: Argument,
-                                   for registration: Registration) throws -> `Type`{
+                                   for registration: Registration) throws -> `Type` {
         do {
+            // swiftlint:disable:next force_cast
             return try dependency.resolve(self, arguments: arguments) as! `Type`
         } catch {
             if !(error is InjectorError) {
@@ -42,7 +43,7 @@ internal extension Resolver {
         return injectable
     }
     
-    func filter(dependencies: [Registration: any Injectable], 
+    func filter(dependencies: [Registration: any Injectable],
                 against registration: Registration) -> [Registration: any Injectable] {
         let criteria = Criteria(registration: registration)
         return dependencies.filter { criteria ~= $0 }
