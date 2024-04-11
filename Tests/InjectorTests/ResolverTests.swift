@@ -1,15 +1,14 @@
 //
 //  ResolverTests.swift
-//  
+//
 //
 //  Created by Karl Catigbe on 4/4/24.
 //
 
-import XCTest
 @testable import Injector
+import XCTest
 
 final class ResolverTests: XCTestCase {
-
     var container: Container!
     override func setUpWithError() throws {
         // Put setup code here. This method is called before the invocation of each test method in the class.
@@ -32,7 +31,6 @@ final class ResolverTests: XCTestCase {
         let resolvedConc = try container.resolve(MockServiceImp1.self)
         XCTAssertTrue(resolvedImpl === implemented)
         XCTAssertTrue(resolvedConc === concrete)
-        
     }
 
     func testResolveSingletonReturnsSameInstance() throws {
@@ -50,7 +48,6 @@ final class ResolverTests: XCTestCase {
         container.register { _ in
             try ThrowingMockService(error: MockError.testError) as MockService
         }
-        
             
         XCTAssertThrowsError(try container.resolve() as MockService) {
             if case let .other(error) = $0 as? InjectorError, let mockError = error as? MockError {
@@ -59,7 +56,6 @@ final class ResolverTests: XCTestCase {
                 XCTFail("Got the wrong error! \($0)")
             }
         }
-        
     }
     
     func testThrowingInjectionErrorThrowsInjectionError() throws {
@@ -67,7 +63,6 @@ final class ResolverTests: XCTestCase {
         container.register { _ in
             try ThrowingMockService(error: InjectorError.notFound(registration)) as MockService
         }
-        
             
         XCTAssertThrowsError(try container.resolve() as MockService) {
             if case let .notFound(reg) = $0 as? InjectorError {
@@ -76,6 +71,5 @@ final class ResolverTests: XCTestCase {
                 XCTFail("Got the wrong error! \($0)")
             }
         }
-        
     }
 }

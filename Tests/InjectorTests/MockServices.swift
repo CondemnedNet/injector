@@ -1,10 +1,11 @@
 //
 //  MockServices.swift
-//  
+//
 //
 //  Created by Karl Catigbe on 4/4/24.
 //
 
+// swiftlint:disable file_types_order
 import Foundation
 
 public enum MockError: Error {
@@ -13,7 +14,7 @@ public enum MockError: Error {
 
 public protocol MockService: AnyObject { }
 
-public class MockServiceImp1: MockService { 
+public class MockServiceImp1: MockService {
     let string: String
     
     convenience init() {

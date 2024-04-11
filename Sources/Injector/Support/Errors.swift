@@ -1,6 +1,6 @@
 //
 //  Errors.swift
-//  
+//
 //
 //  Created by Karl Catigbe on 4/3/24.
 //

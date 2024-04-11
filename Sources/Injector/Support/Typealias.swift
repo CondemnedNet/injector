@@ -1,6 +1,6 @@
 //
 //  Typealias.swift
-//  
+//
 //
 //  Created by Karl Catigbe on 4/8/24.
 //
