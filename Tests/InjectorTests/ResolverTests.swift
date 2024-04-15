@@ -29,8 +29,8 @@ final class ResolverTests: XCTestCase {
         
         let resolvedImpl = try container.resolve() as MockService
         let resolvedConc = try container.resolve(MockServiceImp1.self)
-        XCTAssertTrue(resolvedImpl === implemented)
-        XCTAssertTrue(resolvedConc === concrete)
+        XCTAssertIdentical(resolvedImpl, implemented)
+        XCTAssertIdentical(resolvedConc, concrete)
     }
 
     func testResolveSingletonReturnsSameInstance() throws {
@@ -41,7 +41,7 @@ final class ResolverTests: XCTestCase {
         let firstResolved = try container.resolve() as MockServiceImp1
         let secondResolved = try container.resolve(MockServiceImp1.self)
         
-        XCTAssertTrue(firstResolved === secondResolved)
+        XCTAssertIdentical(firstResolved, secondResolved)
     }
     
     func testThrowingRandomErrorThrowsInjectionError() throws {
@@ -71,5 +71,39 @@ final class ResolverTests: XCTestCase {
                 XCTFail("Got the wrong error! \($0)")
             }
         }
+    }
+    
+    func testResolvingUnregisteredThrowsNotFound() throws {
+        XCTAssertThrowsError(try container.resolve() as MockService) {
+            if case let .notFound(reg) = $0 as? InjectorError {
+                XCTAssertEqual("InjectorTests.MockService", reg.type)
+            } else {
+                XCTFail("Got the wrong error! \($0)")
+            }
+        }
+    }
+    
+    func testResolvingUniqueReturnsNewInstance() throws {
+        container.register(scope: .unique) { _ in
+            return MockServiceImp1("Rand: \(Int.random(in: 0..<100))") as MockService
+        }
+        
+        let firstResolved = try container.resolve() as MockService
+        let secondResolved = try container.resolve() as MockService
+        
+        XCTAssertNotIdentical(firstResolved, secondResolved)
+        
+    }
+    
+    func testResolvingSingletonReturnsSameInstance() throws {
+        container.register(scope: .singleton) { _ in
+            return MockServiceImp1("Rand: \(Int.random(in: 0..<100))") as MockService
+        }
+        
+        let firstResolved = try container.resolve() as MockService
+        let secondResolved = try container.resolve() as MockService
+        
+        XCTAssertIdentical(firstResolved, secondResolved)
+        
     }
 }

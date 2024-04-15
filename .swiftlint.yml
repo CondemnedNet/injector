@@ -13,7 +13,6 @@ analyzer_rules:
   - unused_import
 opt_in_rules:
   - opening_brace
-  - anyobject_protocol
   - array_init
   - attributes
   - closure_body_length

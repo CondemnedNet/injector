@@ -7,28 +7,47 @@
 
 // swiftlint:disable file_types_order
 import Foundation
+@testable import Injector
 
 public enum MockError: Error {
     case testError
 }
 
-public protocol MockService: AnyObject { }
+public protocol MockService: AnyObject {
+    var string: String { get }
+}
 
-public class MockServiceImp1: MockService {
-    let string: String
+public class MockServiceImp1: MockService, CustomStringConvertible {
+    public let string: String
     
-    convenience init() {
-        self.init(string: "DEFAULT")
+    init(_ string: String? = nil) {
+        self.string = string ?? "DEFAULT"
+        print("Just instantiated \(self)")
     }
     
-    init(string: String) {
-        self.string = string
-        print("\(type(of: self)) - Just instantiated \(self.string)")
+    public var description: String {
+        return "\(type(of: self)) - String: \(string) - Location: \(Unmanaged.passUnretained(self).toOpaque())"
     }
 }
 
 public class ThrowingMockService: MockService {
+    public var string: String {
+        return "THROW"
+    }
+    
     init(error: any Error) throws {
         throw error
+    }
+}
+
+public class BadCollaborator: Resolver, Collaborator {
+    public var collaborators: [any Injector.Resolver] = []
+    
+    public func collaborate(with collaborators: [any Injector.Resolver]) {
+        // No-op
+    }
+    
+    public func locate(_ registration: Injector.Registration) -> [Injector.Registration : any Injector.Injectable] {
+        return [:]
     }
 }
