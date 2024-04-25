@@ -54,6 +54,11 @@ public extension Resolver {
     func resolve<`Type`, each Argument>(_ type: `Type`.Type = `Type`.self,
                                         tags: AnyHashable...,
                                         arguments: repeat each Argument) throws -> `Type` {
-        return try resolve(type, tags: Set(tags), arguments: (repeat each arguments))
+        do {
+            return try resolve(type, tags: Set(tags), arguments: (repeat each arguments))
+        } catch {
+            Log.resolver.error("Unable to resolve \(type, privacy: .sensitive(mask: .hash)) - Error: \(error, privacy: .sensitive(mask: .hash))")
+            throw error
+        }
     }
 }

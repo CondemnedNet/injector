@@ -1,0 +1,118 @@
+name: Swift
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - ready_for_review
+  workflow_dispatch:
+
+concurrency:
+  group: '${{ github.workflow }} @ ${{ github.event.pull_request.head.label || github.head_ref || github.ref }}'
+  cancel-in-progress: true
+jobs:
+  Test_iOS:
+    if: github.event.pull_request.draft == false
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build Package
+        id: build
+        run: |
+          xcrun xcodebuild clean build \
+            -scheme Injector \
+            -destination 'platform=iOS Simulator,name=Any iOS Simulator Device,OS=latest' \
+            -quiet \
+            -skipPackagePluginValidation
+      - name: Test
+        id: test
+        if: steps.build.outcome == 'success'
+        run: |
+          xcrun xcodebuild test-without-building \
+            -scheme Injector \
+            -resultBundlePath iOSResults \
+            -destination 'platform=iOS Simulator,name=Any iOS Simulator Device,OS=latest' \
+            -enableCodeCoverage YES \
+            -quiet \
+            -retry-tests-on-failure \
+            -test-iterations 3 \
+            -skipPackagePluginValidation
+      - name: Generate Reports
+        uses: kishikawakatsumi/xcresulttool@v1
+        with:
+          path: iOSResults.xcresult
+          title: iOS Test Results
+          show-passed-tests: false
+        if: success() || failure()
+  Test_tvOS:
+    if: github.event.pull_request.draft == false
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build Package
+        id: build
+        run: |
+          xcrun xcodebuild clean build \
+            -scheme Injector \
+            -destination 'platform=tvOS Simulator,name=Any tvOS Simulator Device,OS=latest' \
+            -quiet \
+            -skipPackagePluginValidation
+      - name: Test
+        id: test
+        if: steps.build.outcome == 'success'
+        run: |
+          xcrun xcodebuild test-without-building \
+            -scheme Injector \
+            -resultBundlePath tvOSResults \
+            -destination 'platform=tvOS Simulator,name=Any tvOS Simulator Device,OS=latest' \
+            -enableCodeCoverage YES \
+            -quiet \
+            -retry-tests-on-failure \
+            -test-iterations 3 \
+            -skipPackagePluginValidation
+      - name: Generate Reports
+        uses: kishikawakatsumi/xcresulttool@v1
+        with:
+          path: tvOSResults.xcresult
+          title: tvOS Test Results
+          show-passed-tests: false
+        if: success() || failure() 
+  Test_visionOS:
+    if: github.event.pull_request.draft == false
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build Package
+        id: build
+        run: |
+          xcrun xcodebuild clean build \
+            -scheme Injector \
+            -destination 'platform=visionOS Simulator,name=Any visionOS Simulator,OS=latest' \
+            -quiet \
+            -skipPackagePluginValidation
+      - name: Test
+        id: test
+        if: steps.build.outcome == 'success'
+        run: |
+          xcrun xcodebuild test-without-building \
+            -scheme Injector \
+            -resultBundlePath visionOSResults \
+            -destination 'platform=visionOS Simulator,name=Any visionOS Simulator,OS=latest' \
+            -enableCodeCoverage YES \
+            -quiet \
+            -retry-tests-on-failure \
+            -test-iterations 3 \
+            -skipPackagePluginValidation
+      - name: Generate Reports
+        uses: kishikawakatsumi/xcresulttool@v1
+        with:
+          path: visionOSResults.xcresult
+          title: visionOS Test Results
+          show-passed-tests: false
+        if: success() || failure() 
+      
