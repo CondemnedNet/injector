@@ -54,6 +54,19 @@ extension Container: Registry {
         return registration
     }
     
+    @discardableResult
+    public func register<`Type`, each Argument>(_ type: `Type`.Type = `Type`.self,
+                                                scope: Scope = .unique,
+                                                tags: Set<AnyHashable>,
+                                                constructor: @escaping AsyncConstructor<`Type`, repeat each Argument>) -> Registration {
+        let registration = Registration(type: type, arguments: (repeat each Argument).self, tags: tags)
+        let dependency = Dependency(registration: registration, scope: scope, constructor: constructor)
+        
+        Log.registry.notice("\(registration, privacy: .sensitive(mask: .hash)) Scope: \(scope.rawValue, privacy: .public)")
+        commit(registration: registration, dependency: dependency)
+        return registration
+    }
+    
     private func commit(registration: Registration, dependency: any Injectable) {
         queue.sync(flags: .barrier) {
             dependencies[registration] = dependency

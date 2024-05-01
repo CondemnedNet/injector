@@ -13,6 +13,13 @@ public protocol Registry {
                                          scope: Scope,
                                          tags: Set<AnyHashable>,
                                          constructor: @escaping Constructor<`Type`, repeat each Argument>) -> Registration
+    
+    // MARK: - Async
+    @discardableResult
+    func register<`Type`, each Argument>(_ type: `Type`.Type,
+                                         scope: Scope,
+                                         tags: Set<AnyHashable>,
+                                         constructor: @escaping AsyncConstructor<`Type`, repeat each Argument>) -> Registration
 }
 
 public extension Registry {
@@ -35,6 +42,30 @@ public extension Registry {
                           instance: @escaping @autoclosure () -> `Type`) -> Registration {
         let constructor: Constructor<`Type`, Void> = { _, _ in
             instance()
+        }
+        return register(type, scope: scope, tags: Set(tags), constructor: constructor)
+    }
+    
+    // MARK: - Async
+    @discardableResult
+    func register<`Type`, each Argument>(_ type: `Type`.Type = `Type`.self,
+                                         scope: Scope = .unique,
+                                         tags: AnyHashable...,
+                                         constructor: @escaping (any Resolver, repeat each Argument) async throws -> `Type`) -> Registration {
+        let constructor: AsyncConstructor<`Type`, repeat each Argument> = { (container: any Resolver, args: repeat each Argument) in
+            try await constructor(container, repeat each args)
+        }
+        
+        return register(type, scope: scope, tags: Set(tags), constructor: constructor)
+    }
+    
+    @discardableResult
+    func register<`Type`>(_ type: `Type`.Type = `Type`.self,
+                          scope: Scope = .unique,
+                          tags: AnyHashable...,
+                          instance: @escaping @autoclosure () async -> `Type`) async -> Registration {
+        let constructor: AsyncConstructor<`Type`, Void> = { _, _ in
+            await instance()
         }
         return register(type, scope: scope, tags: Set(tags), constructor: constructor)
     }
