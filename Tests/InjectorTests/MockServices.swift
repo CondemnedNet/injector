@@ -25,6 +25,11 @@ public class MockServiceImp1: MockService, CustomStringConvertible {
         print("Just instantiated \(self)")
     }
     
+    init(_ string: String? = nil) async {
+        self.string = "ASYNC \(string ?? "DEFAULT")"
+        print("Just instantiated \(self)")
+    }
+    
     public var description: String {
         return "\(type(of: self)) - String: \(string) - Location: \(Unmanaged.passUnretained(self).toOpaque())"
     }

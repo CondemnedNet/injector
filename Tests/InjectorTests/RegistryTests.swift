@@ -37,4 +37,23 @@ final class RegistryTests: XCTestCase {
         let registration = Registration(type: MockService.self)
         XCTAssertNotNil(container.dependencies[registration])
     }
+    
+    func testAsyncRegistrationOfOneDependency() async throws {
+        container.register { _ in await MockServiceImp1() as MockService }
+
+        XCTAssertFalse(container.dependencies.isEmpty)
+        XCTAssertEqual(container.dependencies.count, 1)
+        let registration = Registration(type: MockService.self)
+        XCTAssertNotNil(container.dependencies[registration])
+    }
+    
+    func testAsyncDoubleRegistrationOnlyRegistersOneInstance() async throws {
+        container.register { _ in await MockServiceImp1() as MockService }
+        await container.register(MockService.self, instance: await MockServiceImp1())
+                        
+        XCTAssertFalse(container.dependencies.isEmpty)
+        XCTAssertEqual(container.dependencies.count, 1)
+        let registration = Registration(type: MockService.self)
+        XCTAssertNotNil(container.dependencies[registration])
+    }
 }
