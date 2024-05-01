@@ -1,12 +1,11 @@
 //
 //  TagsTests.swift
-//  
 //
-//  Created by Karl Catigbe on 4/14/24.
+//  Copyright © 2024 Condemned.net.
 //
 
-import XCTest
 @testable import Injector
+import XCTest
 
 final class TagsTests: XCTestCase {
     func testTagsEquals() throws {
@@ -14,22 +13,20 @@ final class TagsTests: XCTestCase {
         let tags: Criteria.TagSet = .equals(set)
         XCTAssertTrue(tags ~= ["test", "mock"])
     }
-    
+
     func testVariadicTagsEquals() throws {
         let tags: Criteria.TagSet = .equals("mock", "test")
         XCTAssertTrue(tags ~= ["test", "mock"])
     }
 
-    
     func testTagsContains() throws {
         let set: Set<AnyHashable> = ["mock", "test"]
         let tags: Criteria.TagSet = .contains(set)
         XCTAssertTrue(tags ~= ["mock", "test", "other"])
     }
-    
+
     func testVariadicTagsContains() throws {
         let tags: Criteria.TagSet = .contains("mock", "test")
         XCTAssertTrue(tags ~= ["mock", "test", "other"])
     }
-
 }

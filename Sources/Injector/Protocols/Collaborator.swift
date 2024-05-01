@@ -1,15 +1,14 @@
 //
 //  Collaborator.swift
 //
-//
-//  Created by Karl Catigbe on 4/10/24.
+//  Copyright © 2024 Condemned.net.
 //
 
 import Foundation
 
 public protocol Collaborator: AnyObject {
     var collaborators: [any Resolver] { get }
-    
+
     func collaborate(with collaborators: [any Resolver])
 }
 
