@@ -1,6 +1,6 @@
 import Foundation
 
-public enum Scope {
+public enum Scope: String {
     case unique
     case singleton
 }
@@ -17,21 +17,23 @@ public class Container {
     }
     
     init(parent: Container? = nil) {
+        Log.general.debug("Initializing with parent: \(String(describing: parent))")
         self.parent = parent
     }
 }
 
 extension Container: Collaborator {
     public func collaborate(with collaborators: [any Resolver]) {
+        Log.collaborator.notice("Collaborating with \(collaborators.map({ "\($0)" }).joined(), privacy: .sensitive)")
         queue.sync(flags: .barrier) {
             let compacted = collaborators
                 .filter({ $0 !== self })
                 .compactMap({ resolver -> WeakWrapper<Container>? in
-                guard let weakContainer = resolver as? Container else {
-                    return nil
-                }
-                return WeakWrapper(value: weakContainer)
-            })
+                    guard let weakContainer = resolver as? Container else {
+                        return nil
+                    }
+                    return WeakWrapper(value: weakContainer)
+                })
             self.weakCollaborators.append(contentsOf: compacted)
         }
     }
@@ -46,6 +48,8 @@ extension Container: Registry {
                                                 constructor: @escaping Constructor<`Type`, repeat each Argument>) -> Registration {
         let registration = Registration(type: type, arguments: (repeat each Argument).self, tags: tags)
         let dependency = Dependency(registration: registration, scope: scope, constructor: constructor)
+        
+        Log.registry.notice("\(registration, privacy: .sensitive(mask: .hash)) Scope: \(scope.rawValue, privacy: .public)")
         commit(registration: registration, dependency: dependency)
         return registration
     }
