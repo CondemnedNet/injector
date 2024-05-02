@@ -1,0 +1,13 @@
+# Options
+--allman false
+--emptybraces spaced
+--header \n {file}\n\n Copyright © {created.year} Condemned.net.\n
+--swiftversion 5
+--wraparguments before-first
+--wrapparameters after-first
+--wrapcollections before-first
+
+# Rules
+--enable blankLineAfterImports
+--enable isEmpty
+--disable wrapMultilineStatementBraces

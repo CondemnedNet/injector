@@ -15,18 +15,26 @@ on:
 concurrency:
   group: '${{ github.workflow }} @ ${{ github.event.pull_request.head.label || github.head_ref || github.ref }}'
   cancel-in-progress: true
+permissions:
+  checks: write
+  statuses: write
+  contents: read
+  pull-requests: write
 jobs:
   Test_iOS:
     if: github.event.pull_request.draft == false
     runs-on: macos-14
     steps:
       - uses: actions/checkout@v4
+      - uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
       - name: Build Package
         id: build
         run: |
-          xcrun xcodebuild clean build \
+          xcrun xcodebuild clean build-for-testing  \
             -scheme Injector \
-            -destination 'platform=iOS Simulator,name=Any iOS Simulator Device,OS=latest' \
+            -destination 'platform=iOS Simulator,name=iPhone 15,OS=17.4' \
             -quiet \
             -skipPackagePluginValidation
       - name: Test
@@ -36,7 +44,7 @@ jobs:
           xcrun xcodebuild test-without-building \
             -scheme Injector \
             -resultBundlePath iOSResults \
-            -destination 'platform=iOS Simulator,name=Any iOS Simulator Device,OS=latest' \
+            -destination 'platform=iOS Simulator,name=iPhone 15,OS=17.4' \
             -enableCodeCoverage YES \
             -quiet \
             -retry-tests-on-failure \
@@ -54,12 +62,15 @@ jobs:
     runs-on: macos-14
     steps:
       - uses: actions/checkout@v4
+      - uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
       - name: Build Package
         id: build
         run: |
-          xcrun xcodebuild clean build \
+          xcrun xcodebuild clean build-for-testing \
             -scheme Injector \
-            -destination 'platform=tvOS Simulator,name=Any tvOS Simulator Device,OS=latest' \
+            -destination 'platform=tvOS Simulator,name=Apple TV 4K (3rd generation),OS=17.4' \
             -quiet \
             -skipPackagePluginValidation
       - name: Test
@@ -69,7 +80,7 @@ jobs:
           xcrun xcodebuild test-without-building \
             -scheme Injector \
             -resultBundlePath tvOSResults \
-            -destination 'platform=tvOS Simulator,name=Any tvOS Simulator Device,OS=latest' \
+            -destination 'platform=tvOS Simulator,name=Apple TV 4K (3rd generation),OS=17.4' \
             -enableCodeCoverage YES \
             -quiet \
             -retry-tests-on-failure \
@@ -81,18 +92,21 @@ jobs:
           path: tvOSResults.xcresult
           title: tvOS Test Results
           show-passed-tests: false
-        if: success() || failure() 
+        if: success() || failure()
   Test_visionOS:
     if: github.event.pull_request.draft == false
     runs-on: macos-14
     steps:
       - uses: actions/checkout@v4
+      - uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
       - name: Build Package
         id: build
         run: |
-          xcrun xcodebuild clean build \
+          xcrun xcodebuild clean build-for-testing \
             -scheme Injector \
-            -destination 'platform=visionOS Simulator,name=Any visionOS Simulator,OS=latest' \
+            -destination 'platform=visionOS Simulator,name=Apple Vision Pro ,OS=1.1' \
             -quiet \
             -skipPackagePluginValidation
       - name: Test
@@ -102,7 +116,7 @@ jobs:
           xcrun xcodebuild test-without-building \
             -scheme Injector \
             -resultBundlePath visionOSResults \
-            -destination 'platform=visionOS Simulator,name=Any visionOS Simulator,OS=latest' \
+            -destination 'platform=visionOS Simulator,name=Apple Vision Pro ,OS=1.1' \
             -enableCodeCoverage YES \
             -quiet \
             -retry-tests-on-failure \
@@ -114,5 +128,4 @@ jobs:
           path: visionOSResults.xcresult
           title: visionOS Test Results
           show-passed-tests: false
-        if: success() || failure() 
-      
+        if: success() || failure()

@@ -1,0 +1,11 @@
+# swiftlint.yml
+
+included:
+  - ".*\\.swift"
+  - InjectorTests
+disabled_rules:
+  - generic_type_name
+  - function_default_parameter_at_end
+  - file_types_order
+  - implicitly_unwrapped_optional
+  - force_unwrapping

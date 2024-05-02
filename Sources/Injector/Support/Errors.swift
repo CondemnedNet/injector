@@ -1,8 +1,7 @@
 //
 //  Errors.swift
 //
-//
-//  Created by Karl Catigbe on 4/3/24.
+//  Copyright © 2024 Condemned.net.
 //
 
 import Foundation
@@ -10,4 +9,5 @@ import Foundation
 public enum InjectorError: Error {
     case notFound(Registration)
     case other(Error)
+    case requiresAsync(String?)
 }

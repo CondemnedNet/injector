@@ -1,8 +1,7 @@
 //
 //  MockServices.swift
 //
-//
-//  Created by Karl Catigbe on 4/4/24.
+//  Copyright © 2024 Condemned.net.
 //
 
 // swiftlint:disable file_types_order
@@ -19,14 +18,18 @@ public protocol MockService: AnyObject {
 
 public class MockServiceImp1: MockService, CustomStringConvertible {
     public let string: String
-    
+
+    public var description: String {
+        return "\(type(of: self)) - String: \(string) - Location: \(Unmanaged.passUnretained(self).toOpaque())"
+    }
+
     init(_ string: String? = nil) {
         self.string = string ?? "DEFAULT"
         print("Just instantiated \(self)")
     }
-    
-    public var description: String {
-        return "\(type(of: self)) - String: \(string) - Location: \(Unmanaged.passUnretained(self).toOpaque())"
+
+    static func asyncFactory(_ string: String? = nil) async -> MockServiceImp1 {
+        return MockServiceImp1("ASYNC \(string ?? "DEFAULT")")
     }
 }
 
@@ -34,7 +37,7 @@ public class ThrowingMockService: MockService {
     public var string: String {
         return "THROW"
     }
-    
+
     init(error: any Error) throws {
         throw error
     }
@@ -42,12 +45,14 @@ public class ThrowingMockService: MockService {
 
 public class BadCollaborator: Resolver, Collaborator {
     public var collaborators: [any Injector.Resolver] = []
-    
-    public func collaborate(with collaborators: [any Injector.Resolver]) {
+
+    public func collaborate(with _: [any Injector.Resolver]) {
         // No-op
     }
-    
-    public func locate(_ registration: Injector.Registration) -> [Injector.Registration : any Injector.Injectable] {
+
+    public func locate(_: Injector.Registration) -> [Injector.Registration: any Injector.Injectable] {
         return [:]
     }
 }
+
+// swiftlint:enable file_types_order
