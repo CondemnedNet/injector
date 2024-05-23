@@ -12,6 +12,8 @@ public enum Scope: String {
 }
 
 public class Container {
+    private let identifier: String
+
     private(set) var parent: Container?
     private(set) var dependencies: [Registration: any Injectable] = [:]
 
@@ -22,26 +24,43 @@ public class Container {
         return weakCollaborators.compactMap { $0.value }
     }
 
-    init(parent: Container? = nil) {
-        Log.general.debug("Initializing with parent: \(String(describing: parent))")
+    public init(parent: Container? = nil, identifier: String = UUID().uuidString) {
+        self.identifier = identifier
+        Log.general.debug("\(self) Initializing with parent: \(String(describing: parent))")
         self.parent = parent
+    }
+
+    public init(parent: Container? = nil, identifier: String = UUID().uuidString, builder: (Container) -> Void = { _ in }) {
+        self.identifier = identifier
+        Log.general.debug("\(self) Initializing with parent: \(String(describing: parent))")
+        self.parent = parent
+        builder(self)
     }
 }
 
 extension Container: Collaborator {
     public func collaborate(with collaborators: [any Resolver]) {
-        Log.collaborator.notice("Collaborating with \(collaborators.map { "\($0)" }.joined(), privacy: .sensitive)")
-        queue.sync(flags: .barrier) {
-            let compacted = collaborators
-                .filter { $0 !== self }
-                .compactMap { resolver -> WeakWrapper<Container>? in
-                    guard let weakContainer = resolver as? Container
-                    else {
-                        return nil
-                    }
-                    return WeakWrapper(value: weakContainer)
+        Log.collaborator.debug("\(self) Collaborating with \(collaborators.map { "\($0)" }.joined(), privacy: .sensitive)")
+        let compacted = collaborators
+            .filter { $0 !== self }
+            .compactMap { resolver -> WeakWrapper<Container>? in
+                guard let weakContainer = resolver as? Container
+                else {
+                    return nil
                 }
+                return WeakWrapper(value: weakContainer)
+            }
+        queue.sync(flags: .barrier) {
             self.weakCollaborators.append(contentsOf: compacted)
+        }
+
+        for weakCollab in compacted
+            .compactMap({ $0.value }) {
+            guard !weakCollab.weakCollaborators.contains(where: { weakWrapper in
+                weakWrapper.value === self
+            }) else { break }
+
+            weakCollab.weakCollaborators.append(WeakWrapper(value: self))
         }
     }
 }
@@ -57,7 +76,7 @@ extension Container: Registry {
         let registration = Registration(type: type, arguments: (repeat each Argument).self, tags: tags)
         let dependency = Dependency(registration: registration, scope: scope, constructor: constructor)
 
-        Log.registry.notice("\(registration, privacy: .sensitive(mask: .hash)) Scope: \(scope.rawValue, privacy: .public)")
+        Log.registry.debug("\(registration, privacy: .sensitive(mask: .hash)) Scope: \(scope.rawValue, privacy: .public)")
         commit(registration: registration, dependency: dependency)
         return registration
     }
@@ -70,7 +89,7 @@ extension Container: Registry {
         let registration = Registration(type: type, arguments: (repeat each Argument).self, tags: tags)
         let dependency = Dependency(registration: registration, scope: scope, constructor: constructor)
 
-        Log.registry.notice("\(registration, privacy: .sensitive(mask: .hash)) Scope: \(scope.rawValue, privacy: .public)")
+        Log.registry.debug("\(registration, privacy: .sensitive(mask: .hash)) Scope: \(scope.rawValue, privacy: .public)")
         commit(registration: registration, dependency: dependency)
         return registration
     }
@@ -93,18 +112,31 @@ extension Container: Resolver {
 
             guard entries.isEmpty
             else {
+                Log.collaborator.trace("\(self) found \(registration.type) - tags: \(registration.tags)")
                 return entries
             }
 
-            var collaboratedEntries: [Registration: any Injectable] = [:]
-
-            for weakContainer in weakCollaborators {
-                if let container = weakContainer.value {
-                    let located = container.locate(registration)
-                    collaboratedEntries = located.merging(collaboratedEntries, uniquingKeysWith: { current, _ in current })
-                }
-            }
-            return collaboratedEntries
+            return locate(registration, parent: self)
         }
+    }
+
+    private func locate(_ registration: Registration, parent: Container) -> [Registration: any Injectable] {
+        for weakCollaborator in weakCollaborators
+            .compactMap({ $0.value })
+            .filter({ $0 !== parent }) {
+            Log.collaborator.trace("\(self) is trying to locate \(registration.type) in \(weakCollaborator)")
+            let located = weakCollaborator.locate(registration)
+            if !located.isEmpty {
+                return located
+            }
+            return weakCollaborator.locate(registration, parent: weakCollaborator)
+        }
+        return [:]
+    }
+}
+
+extension Container: CustomStringConvertible {
+    public var description: String {
+        return "Container: \(identifier)"
     }
 }
