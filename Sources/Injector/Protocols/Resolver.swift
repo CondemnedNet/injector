@@ -11,7 +11,7 @@ public protocol Resolver: AnyObject {
 }
 
 extension Resolver {
-    func resolve<Type, Argument>(_ type: Type.Type = Type.self,
+    func resolve<Type, Argument>(_: Type.Type = Type.self,
                                  tags: Set<AnyHashable>,
                                  arguments: Argument) throws -> `Type` {
         let registration = Registration(type: Type.self, arguments: Argument.self, tags: tags)
@@ -35,7 +35,7 @@ extension Resolver {
 
     // MARK: - Async
 
-    func resolve<Type, Argument>(_ type: Type.Type = Type.self,
+    func resolve<Type, Argument>(_: Type.Type = Type.self,
                                  tags: Set<AnyHashable>,
                                  arguments: Argument) async throws -> `Type` {
         let registration = Registration(type: Type.self, arguments: Argument.self, tags: tags)
@@ -59,8 +59,7 @@ extension Resolver {
 
     func retrieveRegistration(_ registration: Registration) throws -> any Injectable {
         let dependencies = locate(registration)
-        guard let injectable = dependencies[registration]
-        else {
+        guard let injectable = dependencies[registration] else {
             throw InjectorError.notFound(registration)
         }
 

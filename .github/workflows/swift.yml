@@ -52,6 +52,7 @@ jobs:
             -skipPackagePluginValidation
       - name: Generate Reports
         uses: kishikawakatsumi/xcresulttool@v1
+        continue-on-error: true
         with:
           path: iOSResults.xcresult
           title: iOS Test Results
@@ -88,6 +89,7 @@ jobs:
             -skipPackagePluginValidation
       - name: Generate Reports
         uses: kishikawakatsumi/xcresulttool@v1
+        continue-on-error: true
         with:
           path: tvOSResults.xcresult
           title: tvOS Test Results
@@ -124,6 +126,7 @@ jobs:
             -skipPackagePluginValidation
       - name: Generate Reports
         uses: kishikawakatsumi/xcresulttool@v1
+        continue-on-error: true
         with:
           path: visionOSResults.xcresult
           title: visionOS Test Results

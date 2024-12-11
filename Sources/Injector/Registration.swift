@@ -22,4 +22,13 @@ public struct Registration: Equatable, Hashable, CustomStringConvertible {
         self.arguments = String(reflecting: arguments)
         self.tags = tags
     }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(type)
+        hasher.combine(arguments)
+    }
+
+    public static func == (lhs: Self, rhs: Self) -> Bool {
+        return lhs.type == rhs.type && lhs.arguments == rhs.arguments
+    }
 }
