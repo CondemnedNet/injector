@@ -52,7 +52,7 @@ struct Criteria: Equatable {
     init(registration: Registration,
          scope: Scope? = nil) {
         type = registration.type
-        tags = .equals(registration.tags)
+        tags = .contains(registration.tags)
         arguments = registration.arguments
         self.scope = scope
     }

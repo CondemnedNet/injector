@@ -40,7 +40,7 @@ public class Container {
 
 extension Container: Collaborator {
     public func collaborate(with collaborators: [any Resolver]) {
-        Log.collaborator.debug("\(self) Collaborating with \(collaborators.map { "\($0)" }.joined(), privacy: .sensitive)")
+        Log.collaborator.debug("\(self) Collaborating with\n\t\(collaborators.map { "\($0)" }.joined(separator: "\n\t"), privacy: .sensitive)")
         let compacted = collaborators
             .filter { $0 !== self }
             .compactMap { resolver -> WeakWrapper<Container>? in
@@ -103,6 +103,10 @@ extension Container: Registry {
 
 extension Container: Resolver {
     public func locate(_ registration: Registration) -> [Registration: any Injectable] {
+        return locate(registration, collaborator: nil)
+    }
+
+    private func locate(_ registration: Registration, collaborator: Container?) -> [Registration: any Injectable] {
         queue.sync {
             var entries = filter(dependencies: dependencies, against: registration)
             if let parent {
@@ -116,20 +120,22 @@ extension Container: Resolver {
                 return entries
             }
 
-            return locate(registration, parent: self)
+            let collaborators = weakCollaborators
+                .reversed()
+                .compactMap { $0.value }
+                .filter { $0 !== collaborator }
+                .filter { $0 !== self }
+            return locate(registration, collaborators: collaborators)
         }
     }
 
-    private func locate(_ registration: Registration, parent: Container) -> [Registration: any Injectable] {
-        for weakCollaborator in weakCollaborators
-            .compactMap({ $0.value })
-            .filter({ $0 !== parent }) {
-            Log.collaborator.trace("\(self) is trying to locate \(registration.type) in \(weakCollaborator)")
-            let located = weakCollaborator.locate(registration)
+    private func locate(_ registration: Registration, collaborators: [Container]) -> [Registration: any Injectable] {
+        for collaborator in collaborators {
+            Log.collaborator.trace("\(self) is trying to locate \(registration.type) - \(registration.tags) in \(collaborator)")
+            let located = collaborator.locate(registration, collaborator: self)
             if !located.isEmpty {
                 return located
             }
-            return weakCollaborator.locate(registration, parent: weakCollaborator)
         }
         return [:]
     }
