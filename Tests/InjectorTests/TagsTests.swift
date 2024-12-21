@@ -9,7 +9,7 @@ import XCTest
 
 final class TagsTests: XCTestCase {
     func testTagsEquals() throws {
-        let set: Set<AnyHashable> = ["mock", "test"]
+        let set: Set<String> = ["mock", "test"]
         let tags: Criteria.TagSet = .equals(set)
         XCTAssertTrue(tags ~= ["test", "mock"])
     }
@@ -20,7 +20,7 @@ final class TagsTests: XCTestCase {
     }
 
     func testTagsContains() throws {
-        let set: Set<AnyHashable> = ["mock", "test"]
+        let set: Set<String> = ["mock", "test"]
         let tags: Criteria.TagSet = .contains(set)
         XCTAssertTrue(tags ~= ["mock", "test", "other"])
     }

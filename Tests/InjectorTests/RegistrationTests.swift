@@ -17,9 +17,9 @@ final class RegistrationTests: XCTestCase {
 
     func testRegistrationOfTypeAndTags() throws {
         let uuid = UUID()
-        let registration = Registration(type: String.self, tags: ["1", uuid])
+        let registration = Registration(type: String.self, tags: ["1", uuid.uuidString])
         XCTAssertEqual(registration.type, String(reflecting: String.self))
-        XCTAssertEqual(registration.tags, ["1", uuid])
+        XCTAssertEqual(registration.tags, ["1", uuid.uuidString])
         XCTAssertEqual(registration.arguments, String(reflecting: Void.self))
     }
 
@@ -31,9 +31,9 @@ final class RegistrationTests: XCTestCase {
 
     func testRegistrationOfTypeTagsAndArguments() throws {
         let uuid = UUID()
-        let registration = Registration(type: String.self, arguments: type(of: (12, "Hello", MockServiceImp1())), tags: ["23", uuid])
+        let registration = Registration(type: String.self, arguments: type(of: (12, "Hello", MockServiceImp1())), tags: ["23", uuid.uuidString])
         XCTAssertEqual(registration.type, String(reflecting: String.self))
-        XCTAssertEqual(registration.tags, ["23", uuid])
+        XCTAssertEqual(registration.tags, ["23", uuid.uuidString])
         XCTAssertEqual(registration.arguments, String(reflecting: (Int, String, MockServiceImp1).self))
     }
 }

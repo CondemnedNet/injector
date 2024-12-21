@@ -67,31 +67,31 @@ extension Criteria {
     }
 
     struct TagSet: Equatable {
-        let tags: Set<AnyHashable>
+        let tags: Set<String>
         let comparator: Comparator
 
-        private init(tags: Set<AnyHashable>, comparator: Comparator = .equals) {
+        private init(tags: Set<String>, comparator: Comparator = .equals) {
             self.tags = tags
             self.comparator = comparator
         }
 
-        static func equals(_ tags: Set<AnyHashable>) -> Self {
+        static func equals(_ tags: Set<String>) -> Self {
             .init(tags: tags)
         }
 
-        static func equals(_ tags: AnyHashable...) -> Self {
+        static func equals(_ tags: String...) -> Self {
             .equals(Set(tags))
         }
 
-        static func contains(_ tags: Set<AnyHashable>) -> Self {
+        static func contains(_ tags: Set<String>) -> Self {
             .init(tags: tags, comparator: .contains)
         }
 
-        static func contains(_ tags: AnyHashable...) -> Self {
+        static func contains(_ tags: String...) -> Self {
             .contains(Set(tags))
         }
 
-        static func ~= (criterion: Self, tags: Set<AnyHashable>) -> Bool {
+        static func ~= (criterion: Self, tags: Set<String>) -> Bool {
             switch criterion.comparator {
             case .equals:
                 return criterion.tags == tags

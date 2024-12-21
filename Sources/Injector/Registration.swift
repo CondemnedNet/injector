@@ -6,18 +6,18 @@
 
 import Foundation
 
-public struct Registration: Equatable, Hashable, CustomStringConvertible {
+public struct Registration: Sendable, Equatable, Hashable, CustomStringConvertible {
     let type: String
     let arguments: String
-    let tags: Set<AnyHashable>
+    let tags: Set<String>
 
     public var description: String {
-        return "Registration - Type: \(type) - Arguments: \(arguments) - Tags: \(tags.map { "\($0.base)" })"
+        return "Registration - Type: \(type) - Arguments: \(arguments) - Tags: \(tags.map { "\($0)" })"
     }
 
     init<Type, Arguments>(type: Type.Type,
                           arguments: Arguments.Type = Void.self,
-                          tags: Set<AnyHashable> = []) {
+                          tags: Set<String> = []) {
         self.type = String(reflecting: type)
         self.arguments = String(reflecting: arguments)
         self.tags = tags

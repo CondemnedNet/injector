@@ -12,7 +12,7 @@ public protocol Resolver: AnyObject {
 
 extension Resolver {
     func resolve<Type, Argument>(_: Type.Type = Type.self,
-                                 tags: Set<AnyHashable>,
+                                 tags: Set<String>,
                                  arguments: Argument) throws -> `Type` {
         let registration = Registration(type: Type.self, arguments: Argument.self, tags: tags)
         let dependency = try retrieveRegistration(registration)
@@ -36,7 +36,7 @@ extension Resolver {
     // MARK: - Async
 
     func resolve<Type, Argument>(_: Type.Type = Type.self,
-                                 tags: Set<AnyHashable>,
+                                 tags: Set<String>,
                                  arguments: Argument) async throws -> `Type` {
         let registration = Registration(type: Type.self, arguments: Argument.self, tags: tags)
         let dependency = try retrieveRegistration(registration)
@@ -75,7 +75,7 @@ extension Resolver {
 
 public extension Resolver {
     func resolve<Type, each Argument>(_ type: Type.Type = Type.self,
-                                      tags: AnyHashable...,
+                                      tags: String...,
                                       arguments: repeat each Argument) throws -> `Type` {
         do {
             return try resolve(type, tags: Set(tags), arguments: (repeat each arguments))
@@ -86,7 +86,7 @@ public extension Resolver {
     }
 
     func resolve<Type, each Argument>(_ type: Type.Type = Type.self,
-                                      tags: AnyHashable...,
+                                      tags: String...,
                                       arguments: repeat each Argument) async throws -> `Type` {
         do {
             return try await resolve(type, tags: Set(tags), arguments: (repeat each arguments))
