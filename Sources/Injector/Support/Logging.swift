@@ -8,9 +8,13 @@ import Foundation
 import OSLog
 
 enum Log {
-    static var subsystem: String = "net.condemned.injector"
-    static var general: Logger = .init(subsystem: subsystem, category: "General")
-    static var resolver: Logger = .init(subsystem: subsystem, category: "resolver")
-    static var registry: Logger = .init(subsystem: subsystem, category: "registry")
-    static var collaborator: Logger = .init(subsystem: subsystem, category: "collaborator")
+    static let subsystem: String = "net.condemned.injector"
+
+    #if swift(>=6.0)
+        #warning("Logger was marked as Sendable in Swift 6.0 / XCode 16")
+    #endif
+    nonisolated(unsafe) static let general: Logger = .init(subsystem: subsystem, category: "General")
+    nonisolated(unsafe) static let resolver: Logger = .init(subsystem: subsystem, category: "resolver")
+    nonisolated(unsafe) static let registry: Logger = .init(subsystem: subsystem, category: "registry")
+    nonisolated(unsafe) static let collaborator: Logger = .init(subsystem: subsystem, category: "collaborator")
 }

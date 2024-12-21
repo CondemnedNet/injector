@@ -71,7 +71,7 @@ extension Container: Registry {
     @discardableResult
     public func register<Type, each Argument>(_ type: Type.Type = Type.self,
                                               scope: Scope = .unique,
-                                              tags: Set<AnyHashable>,
+                                              tags: Set<String>,
                                               constructor: @escaping Constructor < Type, repeat each Argument>) -> Registration {
         let registration = Registration(type: type, arguments: (repeat each Argument).self, tags: tags)
         let dependency = Dependency(registration: registration, scope: scope, constructor: constructor)
@@ -84,7 +84,7 @@ extension Container: Registry {
     @discardableResult
     public func register<Type, each Argument>(_ type: Type.Type = Type.self,
                                               scope: Scope = .unique,
-                                              tags: Set<AnyHashable>,
+                                              tags: Set<String>,
                                               constructor: @escaping AsyncConstructor < Type, repeat each Argument>) -> Registration {
         let registration = Registration(type: type, arguments: (repeat each Argument).self, tags: tags)
         let dependency = Dependency(registration: registration, scope: scope, constructor: constructor)
